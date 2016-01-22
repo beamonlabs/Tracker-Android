@@ -99,7 +99,6 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         if(!PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("locations_enabled", true)) {
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
             googleApiClient.disconnect();
-            stopSelf();
             return;
         }
         LocationRequest request = new LocationRequest();
