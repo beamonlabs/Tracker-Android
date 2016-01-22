@@ -1,14 +1,19 @@
 package com.tokko.beamon.beamontracker;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class LoginActivity extends Activity {
     static final int REQUEST_ACCOUNT_PICKER = 2;
-    private static final String PREF_EMAIL = "email";
+    public static final String PREF_EMAIL = "email";
     private SharedPreferences settings;
 
     @Override
@@ -22,7 +27,6 @@ public class LoginActivity extends Activity {
         } else {
             chooseAccount();
         }
-
     }
 
     private void setSelectedAccountName(String accountName) {
@@ -32,7 +36,16 @@ public class LoginActivity extends Activity {
     }
 
     void chooseAccount() {
-        startActivityForResult(AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, true, null, null, null, null), REQUEST_ACCOUNT_PICKER);
+        AccountManager am = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+        List<Account> accounts = Arrays.asList(am.getAccounts());
+        Intent i = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            i = AccountManager.newChooseAccountIntent(null, accounts, new String[]{"com.google"}, null, null, null, null);
+        }
+        else{
+            i = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, true, null,  null, null, null);
+        }
+        startActivityForResult(i, REQUEST_ACCOUNT_PICKER);
     }
 
     @Override
@@ -47,9 +60,6 @@ public class LoginActivity extends Activity {
                                     AccountManager.KEY_ACCOUNT_NAME);
                     if (accountName != null) {
                         setSelectedAccountName(accountName);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(PREF_EMAIL, accountName);
-                        editor.apply();
                         continueToNextActivity();
                     }
                 }

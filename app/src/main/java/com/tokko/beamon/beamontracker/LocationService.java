@@ -2,20 +2,22 @@ package com.tokko.beamon.beamontracker;
 
 import android.Manifest;
 import android.app.IntentService;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.widget.Toast;
 
+import com.firebase.client.Firebase;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -28,6 +30,10 @@ public class LocationService extends IntentService implements GoogleApiClient.Co
     // TODO: Rename actions, choose action names that describe tasks that this
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
     public static final String ACTION_REGISTER = "com.tokko.beamon.beamontracker.action.REGISTER";
+    public static final String USER_EMAIL = "user";
+    public static final String EXTRA_LONGITUDE = "longitude";
+    private static final String EXTRA_LATITUTE = "latitude";
+
     private GoogleApiClient googleApiClient;
 
     public LocationService() {
@@ -103,7 +109,14 @@ public class LocationService extends IntentService implements GoogleApiClient.Co
 
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(getApplicationContext(), "Location updated", Toast.LENGTH_SHORT).show();
+        String email = getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, "");
+        Firebase.setAndroidContext(this);
+        Firebase ref = new Firebase("https://glaring-torch-9657.firebaseio.com/");
+        Firebase posts = ref.child("beams/" + email.split("@")[0].replace('.', '-'));
+        User user = new User(email,
+                location.getLongitude(),
+                location.getLatitude());
+        posts.setValue(user);
     }
 
 }
