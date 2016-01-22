@@ -39,17 +39,22 @@
         </activity>
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps">
-        </activity>
+            android:theme="@android:style/Theme.Holo.Light.DarkActionBar"
+            android:label="@string/title_activity_maps" />
 
         <service
             android:name=".LocationService"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.tokko.beamon.beamontracker.action.LOCATION_UPDATE"/>
-                <action android:name="com.tokko.beamon.beamontracker.action.LOCATION_UPDATE"/>
+                <action android:name="com.tokko.beamon.beamontracker.action.LOCATION_UPDATE" />
+                <action android:name="com.tokko.beamon.beamontracker.action.LOCATION_UPDATE" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_preferences"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

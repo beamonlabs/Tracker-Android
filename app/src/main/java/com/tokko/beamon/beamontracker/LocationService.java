@@ -2,11 +2,17 @@ package com.tokko.beamon.beamontracker;
 
 import android.Manifest;
 import android.app.IntentService;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 
 import com.firebase.client.Firebase;
@@ -16,9 +22,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
@@ -26,40 +29,54 @@ import java.util.Map;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class LocationService extends IntentService implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     // TODO: Rename actions, choose action names that describe tasks that this
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
     public static final String ACTION_REGISTER = "com.tokko.beamon.beamontracker.action.REGISTER";
-    public static final String USER_EMAIL = "user";
-    public static final String EXTRA_LONGITUDE = "longitude";
-    private static final String EXTRA_LATITUTE = "latitude";
 
     private GoogleApiClient googleApiClient;
 
+    private BroadcastReceiver br = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+                  handleIntent(intent);
+        }
+    };
     public LocationService() {
-        super("LocationService");
-    }
-
-
-    /**
-     * Starts this service to perform action Foo with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
-    // TODO: Customize helper method
-    public static void startActionFoo(Context context) {
-        Intent intent = new Intent(context, LocationService.class);
-        intent.setAction(ACTION_REGISTER);
-        context.startService(intent);
+        //super("LocationService");
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public void onDestroy() {
+        super.onDestroy();
+        if(br != null){
+            unregisterReceiver(br);
+        }
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        handleIntent(intent);
+        registerReceiver(br, new IntentFilter(ACTION_REGISTER));
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void handleIntent(Intent intent) {
         if (intent != null) {
             final String action = intent.getAction();
-            if (ACTION_REGISTER.equals(action)) {
+            if(googleApiClient == null)
                 getClient();
+            if (ACTION_REGISTER.equals(action)) {
+                if(googleApiClient.isConnected())
+                    isConnected();
+                else
+                    googleApiClient.connect();
             }
         }
     }
@@ -71,11 +88,20 @@ public class LocationService extends IntentService implements GoogleApiClient.Co
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-        googleApiClient.connect();
     }
 
     @Override
     public void onConnected(Bundle bundle) {
+        isConnected();
+    }
+
+    private void isConnected() {
+        if(!PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("locations_enabled", true)) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+            googleApiClient.disconnect();
+            stopSelf();
+            return;
+        }
         LocationRequest request = new LocationRequest();
         //request.setInterval(1000*60*5); //five minute interval //TODO: uncomment
         request.setInterval(1000); //one minute inter, for testing //TODO: remove
