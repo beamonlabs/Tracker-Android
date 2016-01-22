@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -13,17 +14,28 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.firebase.client.ChildEventListener;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, ChildEventListener, ValueEventListener {
 
     private GoogleMap mMap;
+    private ArrayList<User> users = new UserList();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +46,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         startService(new Intent(getApplicationContext(), LocationService.class).setAction(LocationService.ACTION_REGISTER));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Firebase.setAndroidContext(this);
+        Firebase ref = new Firebase("https://glaring-torch-9657.firebaseio.com/");
+        Query q = ref.child("beams");
+        q.addChildEventListener(this);
+        q.addListenerForSingleValueEvent(this);
     }
 
     @Override
@@ -80,8 +102,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setZoomGesturesEnabled(true);
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(mMap.po)); //TODO: move camera to user
     }
+
+    @Override
+    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+        try {
+            User user = extractUser(dataSnapshot);
+            if(!user.email.equals(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""))) {
+                users.add(user);
+            }
+            populateMap();
+        }
+        catch (Exception ignored){}
+    }
+
+    private void populateMap() {
+        mMap.clear();
+        for (User user : users) {
+            Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(true));
+            userMarker.setTitle(user.getName());
+            userMarker.setVisible(true);
+        }
+    }
+
+    @NonNull
+    private User extractUser(DataSnapshot dataSnapshot) {
+        HashMap<String, Object> o = (HashMap<String, Object>) dataSnapshot.getValue();
+        return new User((String)o.get("email"), (double)o.get("longitude"), (double)o.get("latitude"));
+    }
+
+    @Override
+    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+        onChildAdded(dataSnapshot, s);
+    }
+
+    @Override
+    public void onChildRemoved(DataSnapshot dataSnapshot) {
+        onChildAdded(dataSnapshot, "");
+    }
+
+    @Override
+    public void onChildMoved(DataSnapshot dataSnapshot, String s) {   }
+
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+
+    }
+
+    @Override
+    public void onCancelled(FirebaseError firebaseError) {   }
 }

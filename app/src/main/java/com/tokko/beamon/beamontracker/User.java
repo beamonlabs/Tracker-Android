@@ -6,9 +6,13 @@ public class User {
     public double latitude;
 
     public User(String email, double longitude, double latitude) {
-        this.email = email;
+       setEmail(email);
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public String getName() {
+        return email.split("@")[0].replace('.', ' ').replaceAll("\\s([a-z])", " $1".toUpperCase());
     }
 
     public String getEmail() {
@@ -33,5 +37,15 @@ public class User {
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        try{
+            return email.equals(((User)o).getEmail());
+        }
+        catch(ClassCastException ignored){
+            return false;
+        }
     }
 }
