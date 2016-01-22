@@ -37,6 +37,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".LocationService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.tokko.beamon.beamontracker.action.LOCATION_UPDATE"/>
+                <action android:name="com.tokko.beamon.beamontracker.action.LOCATION_UPDATE"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
