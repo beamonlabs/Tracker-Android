@@ -16,7 +16,12 @@ public class User {
     }
 
     public String getName() {
-        return email.split("@")[0].replace('.', ' ').replaceAll("\\s([a-z])", " $1".toUpperCase());
+        String name = email.split("@")[0]; //.replace('.', ' '); //.replaceAll(" ([a-z])", " $1".toUpperCase());
+        StringBuilder sb = new StringBuilder();
+        for (String part : name.split("\\.")) {
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(" ");
+        }
+        return sb.toString().trim();
     }
 
     public String getEmail() {
