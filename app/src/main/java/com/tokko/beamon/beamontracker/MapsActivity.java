@@ -120,7 +120,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void populateMap() {
         mMap.clear();
         for (User user : users) {
-            Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(true));
+            Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
             userMarker.setTitle(user.getName());
             userMarker.setVisible(true);
         }
