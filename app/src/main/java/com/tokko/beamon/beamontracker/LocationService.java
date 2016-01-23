@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 
 import com.firebase.client.Firebase;
+import com.firebase.client.Query;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -99,6 +100,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         if(!PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("locations_enabled", true)) {
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
             googleApiClient.disconnect();
+            User user = new User(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""));
+            Firebase ref = new Firebase("https://glaring-torch-9657.firebaseio.com/beams/"+user.getKey());
+            ref.removeValue();
             return;
         }
         LocationRequest request = new LocationRequest();

@@ -11,6 +11,10 @@ public class User {
         this.latitude = latitude;
     }
 
+    public User(String email) {
+        setEmail(email);
+    }
+
     public String getName() {
         return email.split("@")[0].replace('.', ' ').replaceAll("\\s([a-z])", " $1".toUpperCase());
     }
@@ -47,5 +51,9 @@ public class User {
         catch(ClassCastException ignored){
             return false;
         }
+    }
+
+    public String getKey() {
+        return email.split("@")[0].replace('.', '-');
     }
 }
