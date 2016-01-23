@@ -1,0 +1,3 @@
+Tracks Beamon People and display them in a map.
+Primary use case is for the conference in Cervinia for communication and synchronization of activities.
+Secondary use case is to find missing people if avalanches or injuries occur.

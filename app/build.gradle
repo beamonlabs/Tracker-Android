@@ -1,8 +1,18 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.github.triplet.play'
 
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
+
+    signingConfigs {
+        release {
+            storeFile rootProject.file("beamon-android.keystore")
+            storePassword System.getenv("BEAMON_KEYSTORE_PASSWORD")
+            keyAlias "beamon-release"
+            keyPassword System.getenv("BEAMON_RELEASE_PASS")
+        }
+    }
 
     defaultConfig {
         applicationId "com.tokko.beamon.beamontracker"
@@ -18,8 +28,11 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            zipAlignEnabled true
         }
     }
 }
