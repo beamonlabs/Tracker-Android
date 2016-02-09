@@ -52,7 +52,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onStart() {
         super.onStart();
         Firebase.setAndroidContext(this);
-        Firebase ref = new Firebase("https://glaring-torch-9657.firebaseio.com/");
+        Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker");
         Query q = ref.child("users");
         q.addChildEventListener(this);
         q.addListenerForSingleValueEvent(this);
