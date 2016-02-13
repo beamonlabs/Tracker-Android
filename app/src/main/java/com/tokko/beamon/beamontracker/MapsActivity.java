@@ -31,7 +31,7 @@ import java.util.HashMap;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, ChildEventListener, ValueEventListener {
 
     private GoogleMap mMap;
-    private ArrayList<User> users = new UserList();
+    private HashMap<String, Marker> users = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,43 +104,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-        User user;
-        try {
-             user = extractUser(dataSnapshot);
-            if(!user.getEmail().equals(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""))) {
-                users.add(user);
-            }
-            populateMap();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+        User user = extractUser(dataSnapshot);
+        if(user != null)
+            addMarker(user);
     }
 
-    private void populateMap() {
-        mMap.clear();
-        for (User user : users) {
-            Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
-            userMarker.setTitle(user.getFullName());
-            userMarker.setVisible(true);
-        }
+    private void addMarker(User user) {
+        Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
+        userMarker.setTitle(user.getFullName());
+        userMarker.setVisible(true);
+        users.put(user.getEmail(), userMarker);
     }
 
-    @NonNull
     private User extractUser(DataSnapshot dataSnapshot) {
         HashMap<String, Object> o = (HashMap<String, Object>) dataSnapshot.getValue();
         User u = new User((String)o.get("email"), (double)o.get("longitude"), (double)o.get("latitude"));
-        return u;
+        if(u.getEmail() != null && !u.getEmail().equals(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""))) {
+            return u;
+        }
+        return null;
     }
 
     @Override
     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-        onChildAdded(dataSnapshot, s);
+        User user = extractUser(dataSnapshot);
+        if(user != null){
+            Marker marker = users.get(user.getEmail());
+            if(marker == null){
+                addMarker(user);
+                return;
+            }
+            marker.setPosition(new LatLng(user.getLatitude(), user.getLongitude()));
+
+        }
     }
 
     @Override
     public void onChildRemoved(DataSnapshot dataSnapshot) {
-        onChildAdded(dataSnapshot, "");
+        User user = extractUser(dataSnapshot);
+        if(user != null){
+            Marker marker = users.get(user.getEmail());
+            marker.remove();
+        }
     }
 
     @Override
@@ -148,7 +153,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
-
+        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+            onChildAdded(ds, "");
+        }
     }
 
     @Override
