@@ -3,13 +3,10 @@ package com.tokko.beamon.beamontracker;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,7 +21,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -101,27 +97,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setZoomGesturesEnabled(true);
+
         // Add a marker in Sydney and move the camera
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(mMap.po)); //TODO: move camera to user
     }
 
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+        User user;
         try {
-            User user = extractUser(dataSnapshot);
-            if(!user.email.equals(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""))) {
+             user = extractUser(dataSnapshot);
+            if(!user.getEmail().equals(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""))) {
                 users.add(user);
             }
             populateMap();
         }
-        catch (Exception ignored){}
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void populateMap() {
         mMap.clear();
         for (User user : users) {
             Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
-            userMarker.setTitle(user.getName());
+            userMarker.setTitle(user.getFullName());
             userMarker.setVisible(true);
         }
     }
@@ -129,7 +129,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @NonNull
     private User extractUser(DataSnapshot dataSnapshot) {
         HashMap<String, Object> o = (HashMap<String, Object>) dataSnapshot.getValue();
-        return new User((String)o.get("email"), (double)o.get("longitude"), (double)o.get("latitude"));
+        User u = new User((String)o.get("email"), (double)o.get("longitude"), (double)o.get("latitude"));
+        return u;
     }
 
     @Override

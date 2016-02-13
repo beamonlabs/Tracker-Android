@@ -101,13 +101,13 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
             googleApiClient.disconnect();
             User user = new User(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""));
-            Firebase ref = new Firebase("https://glaring-torch-9657.firebaseio.com/beams/"+user.getKey());
+            Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/users/"+user.getFullName());
             ref.removeValue();
             return;
         }
         LocationRequest request = new LocationRequest();
-        request.setInterval(1000*60); //one minute interval //TODO: uncomment
-        //request.setInterval(1000); //one minute inter, for testing //TODO: remove
+       // request.setInterval(1000*60); //one minute interval //TODO: uncomment
+        request.setInterval(1000); //one minute inter, for testing //TODO: remove
         request.setFastestInterval(1000);
 
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -140,7 +140,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         String email = getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, "");
         Firebase.setAndroidContext(this);
         Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/");
-        Firebase posts = ref.child("users/" + email.split("@")[0].replace('.', '-'));
+        Firebase posts = ref.child("users/" + email.split("@")[0].replace('.', ' '));
         User user = new User(email,
                 location.getLongitude(),
                 location.getLatitude());

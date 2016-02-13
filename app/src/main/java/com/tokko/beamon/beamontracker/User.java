@@ -1,21 +1,24 @@
 package com.tokko.beamon.beamontracker;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class User {
-    public String email;
-    public double longitude;
-    public double latitude;
+    private final String email;
+    private double longitude;
+    private double latitude;
 
     public User(String email, double longitude, double latitude) {
-       setEmail(email);
+        this(email);
         this.longitude = longitude;
         this.latitude = latitude;
     }
 
     public User(String email) {
-        setEmail(email);
+        this.email = email;
     }
 
-    public String getName() {
+    public String getFullName() {
         String name = email.split("@")[0]; //.replace('.', ' '); //.replaceAll(" ([a-z])", " $1".toUpperCase());
         StringBuilder sb = new StringBuilder();
         for (String part : name.split("\\.")) {
@@ -26,10 +29,6 @@ public class User {
 
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public double getLongitude() {
@@ -58,7 +57,7 @@ public class User {
         }
     }
 
-    public String getKey() {
-        return email.split("@")[0].replace('.', '-');
+    public String getTimestamp(){
+        return new SimpleDateFormat("yyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis()));
     }
 }
