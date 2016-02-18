@@ -4,7 +4,16 @@ apply plugin: 'com.github.triplet.play'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
-
+/*
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'armeabi-v7a'
+            universalApk true
+        }
+    }
+*/
     signingConfigs {
         release {
             storeFile rootProject.file("beamon-android.keystore")
@@ -18,7 +27,7 @@ android {
         applicationId "com.tokko.beamon.beamontracker"
         minSdkVersion 19
         targetSdkVersion 23
-        versionCode 3
+        versionCode 6
         versionName "1.0"
     }
     packagingOptions {
