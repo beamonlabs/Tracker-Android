@@ -1,6 +1,8 @@
 package com.tokko.beamon.beamontracker;
 
 import android.Manifest;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.SearchView;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
@@ -32,6 +35,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private HashMap<String, Marker> users = new HashMap<>();
+    private String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         startService(new Intent(getApplicationContext(), LocationService.class).setAction(LocationService.ACTION_REGISTER));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            query = intent.getStringExtra(SearchManager.QUERY);
+            if(query != null)
+                query.trim();
+            filterUsers();
+        }
+    }
+
+    private void filterUsers() {
+        for (String key : users.keySet()) {
+            Marker marker = users.get(key);
+            boolean visible = query == null || key.toLowerCase().contains(query);
+                marker.remove();
+           // marker.setVisible(false);
+        }
     }
 
     @Override
@@ -58,6 +81,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.mapmenu, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
         return true;
     }
 
@@ -112,8 +141,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addMarker(User user) {
         Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
         userMarker.setTitle(user.getFullName());
+       // userMarker.setVisible(query == null || user.getFullName().toLowerCase().contains(query));
         userMarker.setVisible(true);
-        users.put(user.getEmail(), userMarker);
+        users.put(user.getFullName(), userMarker);
     }
 
     private User extractUser(DataSnapshot dataSnapshot) {
@@ -135,7 +165,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
             }
             marker.setPosition(new LatLng(user.getLatitude(), user.getLongitude()));
-
         }
     }
 

@@ -39,8 +39,16 @@
         </activity>
         <activity
             android:name=".MapsActivity"
-            android:theme="@android:style/Theme.Holo.Light.DarkActionBar"
-            android:label="@string/title_activity_maps" />
+            android:label="@string/title_activity_maps"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Holo.Light.DarkActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
 
         <service
             android:name=".LocationService"
