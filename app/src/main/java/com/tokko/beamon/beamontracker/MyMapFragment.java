@@ -22,29 +22,26 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
+import java.util.Random;
 
 public class MyMapFragment extends MapFragment implements OnMapReadyCallback, ChildEventListener, ValueEventListener {
 
     private GoogleMap mMap;
     private HashMap<String, Marker> users = new HashMap<>();
     private String query;
+    private Random r = new Random(1337);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getMapAsync(this);
         getActivity().startService(new Intent(getActivity(), LocationService.class).setAction(LocationService.ACTION_REGISTER));
-
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        Firebase.setAndroidContext(getActivity());
-        Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker");
-        Query q = ref.child("users");
-        q.addChildEventListener(this);
-        q.addListenerForSingleValueEvent(this);
+
     }
 
     public void filterUsers(String query){
@@ -69,6 +66,11 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
         googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setZoomGesturesEnabled(true);
+        Firebase.setAndroidContext(getActivity());
+        Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker");
+        Query q = ref.child("users");
+        q.addChildEventListener(this);
+        q.addListenerForSingleValueEvent(this);
     }
 
     @Override
@@ -87,14 +89,15 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
 
     private void setMarkerVisibility(String key, Marker marker) {
         boolean visible = query == null || key.toLowerCase().contains(query);
-        marker.setVisible(false);
+        marker.setVisible(!marker.isVisible());
     }
 
     private void addMarker(User user) {
+
         Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
         userMarker.setTitle(user.getFullName());
         //setMarkerVisibility(user.getFullName(), userMarker);
-        //userMarker.setVisible(true);
+        userMarker.setVisible(false);
         users.put(user.getFullName(), userMarker);
     }
 
@@ -136,7 +139,7 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
         for (DataSnapshot ds : dataSnapshot.getChildren()) {
-            onChildAdded(ds, "");
+            onChildChanged(ds, "");
         }
     }
 
