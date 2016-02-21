@@ -65,7 +65,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
     public int onStartCommand(Intent intent, int flags, int startId) {
         handleIntent(intent);
         registerReceiver(br, new IntentFilter(ACTION_REGISTER));
-        return super.onStartCommand(intent, flags, startId);
+        return Service.START_STICKY;
     }
 
     private void handleIntent(Intent intent) {
