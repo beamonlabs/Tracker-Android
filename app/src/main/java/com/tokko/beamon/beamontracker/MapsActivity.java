@@ -110,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void addMarker(User user) {
+        if(users.containsKey(user.getEmail())) return;
         Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
         userMarker.setTitle(user.getFullName());
         userMarker.setVisible(true);
