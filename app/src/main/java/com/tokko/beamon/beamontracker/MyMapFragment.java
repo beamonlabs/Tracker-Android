@@ -17,6 +17,7 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -94,7 +95,10 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
 
     private void addMarker(User user) {
         if(users.containsKey(user.getEmail())) return;
-        Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
+        MarkerOptions markerOptions = new MarkerOptions();
+        //TODO: set stale markers to red
+        markerOptions = markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
+        Marker userMarker = mMap.addMarker(markerOptions.position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
         userMarker.setTitle(user.getFullName());
         setMarkerVisibility(user.getFullName(), userMarker);
        // userMarker.setVisible(false);
