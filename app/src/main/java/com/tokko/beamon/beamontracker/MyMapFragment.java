@@ -89,16 +89,16 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
 
     private void setMarkerVisibility(String key, Marker marker) {
         boolean visible = query == null || key.toLowerCase().contains(query);
-        marker.setVisible(!marker.isVisible());
+        marker.setVisible(visible);
     }
 
     private void addMarker(User user) {
-
+        if(users.containsKey(user.getEmail())) return;
         Marker userMarker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
         userMarker.setTitle(user.getFullName());
-        //setMarkerVisibility(user.getFullName(), userMarker);
-        userMarker.setVisible(false);
-        users.put(user.getFullName(), userMarker);
+        setMarkerVisibility(user.getFullName(), userMarker);
+       // userMarker.setVisible(false);
+        users.put(user.getEmail(), userMarker);
     }
 
     private User extractUser(DataSnapshot dataSnapshot) {
