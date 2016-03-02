@@ -1,10 +1,15 @@
 package com.tokko.beamon.beamontracker;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v4.app.ActivityCompat;
 
 import com.firebase.client.ChildEventListener;
@@ -26,11 +31,15 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class MyMapFragment extends MapFragment implements OnMapReadyCallback, ChildEventListener, ValueEventListener {
+    public static final String ACTION_GEOCODE = "action_geocode";
+    public static final String EXTRA_ADDRESS = "adress";
+    public static final String EXTRA_LOCATION = "location";
+    public static final String EXTRA_KEY = "key";
 
     private GoogleMap mMap;
     private HashMap<String, Marker> users = new HashMap<>();
     private String query;
-    private Random r = new Random(1337);
+    private GeocodeReceiver gr;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,7 +51,24 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
     @Override
     public void onStart() {
         super.onStart();
+        if(gr == null) {
+            gr = new GeocodeReceiver(this);
+            getActivity().registerReceiver(gr, new IntentFilter(ACTION_GEOCODE));
+        }
+    }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(gr != null){
+            getActivity().unregisterReceiver(gr);
+            gr = null;
+        }
+    }
+
+    public void updateGeocode(String key, String address){
+        if(!users.containsKey(key)) return;
+        users.get(key).setSnippet(address);
     }
 
     public void filterUsers(String query){
@@ -98,11 +124,13 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
         MarkerOptions markerOptions = new MarkerOptions();
         //TODO: set stale markers to red
         markerOptions = markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET));
-        Marker userMarker = mMap.addMarker(markerOptions.position(new LatLng(user.getLatitude(), user.getLongitude())).draggable(false));
+        LatLng position = new LatLng(user.getLatitude(), user.getLongitude());
+        Marker userMarker = mMap.addMarker(markerOptions.position(position).draggable(false));
         userMarker.setTitle(user.getFullName());
         setMarkerVisibility(user.getFullName(), userMarker);
        // userMarker.setVisible(false);
         users.put(user.getEmail(), userMarker);
+        getActivity().startService(new Intent(getActivity(), FetchAddressIntentService.class).putExtra(EXTRA_KEY, user.getEmail()).putExtra(EXTRA_LOCATION, position));
     }
 
     private User extractUser(DataSnapshot dataSnapshot) {
@@ -125,6 +153,9 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
                 return;
             }
             marker.setPosition(new LatLng(user.getLatitude(), user.getLongitude()));
+            LatLng position = marker.getPosition();
+            getActivity().startService(new Intent(getActivity(), FetchAddressIntentService.class).putExtra(EXTRA_KEY, user.getEmail()).putExtra(EXTRA_LOCATION, position));
+
         }
     }
 
@@ -149,4 +180,17 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
 
     @Override
     public void onCancelled(FirebaseError firebaseError) {   }
+
+    private class GeocodeReceiver extends BroadcastReceiver{
+        private MyMapFragment f;
+
+        public GeocodeReceiver(MyMapFragment f){
+            this.f = f;
+        }
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(f == null) return;
+            f.updateGeocode(intent.getStringExtra(EXTRA_KEY), intent.getStringExtra(EXTRA_ADDRESS));
+        }
+    }
 }
