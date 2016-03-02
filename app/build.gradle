@@ -27,7 +27,7 @@ android {
         applicationId "com.tokko.beamon.beamontracker"
         minSdkVersion 19
         targetSdkVersion 23
-        versionCode 11
+        versionCode 12
         versionName "1.0"
     }
     packagingOptions {
