@@ -5,11 +5,13 @@ import java.util.Date;
 
 public class User {
     private final String email;
+    private String fullName;
     private double longitude;
     private double latitude;
 
-    public User(String email, double longitude, double latitude) {
+    public User(String email, String fullName, double longitude, double latitude) {
         this(email);
+        this.fullName = fullName;
         this.longitude = longitude;
         this.latitude = latitude;
     }
@@ -19,12 +21,11 @@ public class User {
     }
 
     public String getFullName() {
-        String name = email.split("@")[0]; //.replace('.', ' '); //.replaceAll(" ([a-z])", " $1".toUpperCase());
-        StringBuilder sb = new StringBuilder();
-        for (String part : name.split("\\.")) {
-            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(" ");
-        }
-        return sb.toString().trim();
+       return fullName;
+    }
+
+    public void setFullName(String fullName){
+        this.fullName = fullName;
     }
 
     public String getEmail() {

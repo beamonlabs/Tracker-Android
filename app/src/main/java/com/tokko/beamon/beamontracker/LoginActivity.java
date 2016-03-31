@@ -1,19 +1,15 @@
 package com.tokko.beamon.beamontracker;
 
-import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class LoginActivity extends Activity {
     static final int REQUEST_ACCOUNT_PICKER = 2;
     public static final String PREF_EMAIL = "email";
+    public static final String FULL_NAME = "full name";
     private SharedPreferences settings;
 
     @Override
@@ -22,8 +18,9 @@ public class LoginActivity extends Activity {
         // Inside your Activity class onCreate method
         settings = getSharedPreferences(LoginActivity.class.getSimpleName(), 0);
         setSelectedAccountName(settings.getString(PREF_EMAIL, null));
+
         if (settings.getString(PREF_EMAIL, null) != null) {
-            continueToNextActivity();
+           continueToNextActivity();
         } else {
             chooseAccount();
         }

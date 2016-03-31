@@ -6,11 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
+import android.widget.Toast;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
@@ -55,6 +58,23 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
             gr = new GeocodeReceiver(this);
             getActivity().registerReceiver(gr, new IntentFilter(ACTION_GEOCODE));
         }
+        getUserName();
+    }
+
+    private void getUserName()
+    {
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED ) {
+            return;
+        }
+       storeUserName();
+    }
+
+    private void storeUserName(){
+        Cursor c = getActivity().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
+        c.moveToFirst();
+        String s = (c.getString(c.getColumnIndex("display_name")));
+        c.close();
+        getActivity().getSharedPreferences(LoginActivity.class.getSimpleName(), Context.MODE_PRIVATE).edit().putString(LoginActivity.FULL_NAME, s).apply();
     }
 
     @Override
@@ -81,9 +101,6 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                    1);
             return;
         }
         requestFireBase();
@@ -101,18 +118,6 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
         q.addListenerForSingleValueEvent(this);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case 1: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    requestFireBase();
-                } else {
-                    getActivity().finish();
-                }
-            }
-        }
-    }
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
         User user = extractUser(dataSnapshot);
@@ -147,7 +152,7 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
 
     private User extractUser(DataSnapshot dataSnapshot) {
         HashMap<String, Object> o = (HashMap<String, Object>) dataSnapshot.getValue();
-        User u = new User((String)o.get("email"), (double)o.get("longitude"), (double)o.get("latitude"));
+        User u = new User((String)o.get("email"), (String)o.get("fullName"), (double)o.get("longitude"), (double)o.get("latitude"));
 
         if(u.getEmail() != null && getActivity() != null && !u.getEmail().equals(getActivity().getSharedPreferences(LoginActivity.class.getSimpleName(), Context.MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""))) {
             return u;

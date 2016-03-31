@@ -15,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
@@ -41,6 +42,27 @@ public class MapsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mapFragment = new MyMapFragment();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+                Toast.makeText(this, "This permission is required to read your full name and profile picture from the phone storage.", Toast.LENGTH_LONG).show();
+            }
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.READ_CONTACTS},
+                    1);
+            return;
+        }
+        proceed();
+    }
+
+    private void proceed() {
         getFragmentManager().beginTransaction().replace(android.R.id.content, mapFragment).commit();
         startService(new Intent(getApplicationContext(), LocationService.class).setAction(LocationService.ACTION_REGISTER));
     }
@@ -53,6 +75,19 @@ public class MapsActivity extends Activity {
                 query = query.trim();
             if(mapFragment != null)
                 mapFragment.filterUsers(query);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    proceed();
+                } else {
+                    finish();
+                }
+                break;
         }
     }
 

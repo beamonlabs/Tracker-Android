@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.plus.Plus;
 
 
 public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -120,11 +122,14 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
 
     @Override
     public void onLocationChanged(Location location) {
-        String email = getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, "");
+        SharedPreferences sharedPreferences = getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE);
+        String email = sharedPreferences.getString(LoginActivity.PREF_EMAIL, "");
+        String fullName = sharedPreferences.getString(LoginActivity.FULL_NAME, "");
         Firebase.setAndroidContext(this);
         Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/");
         Firebase posts = ref.child("users/" + new User(email).getFullName());
         User user = new User(email,
+                fullName,
                 location.getLongitude(),
                 location.getLatitude());
         posts.setValue(user);
