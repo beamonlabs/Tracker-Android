@@ -72,7 +72,7 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
     private void storeUserName(){
         Cursor c = getActivity().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
         c.moveToFirst();
-        String s = (c.getString(c.getColumnIndex("display_name")));
+        String s = (c.getString(c.getColumnIndex(ContactsContract.Profile.DISPLAY_NAME)));
         c.close();
         getActivity().getSharedPreferences(LoginActivity.class.getSimpleName(), Context.MODE_PRIVATE).edit().putString(LoginActivity.FULL_NAME, s).apply();
     }
