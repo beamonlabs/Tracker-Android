@@ -81,18 +81,19 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    1);
             return;
         }
-        googleMap.setMyLocationEnabled(true);
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
-        googleMap.getUiSettings().setZoomGesturesEnabled(true);
+        requestFireBase();
+    }
+
+    private void requestFireBase() {
+        //noinspection ResourceType
+        mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
         Firebase.setAndroidContext(getActivity());
         Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker");
         Query q = ref.child("users");
@@ -100,6 +101,18 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
         q.addListenerForSingleValueEvent(this);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    requestFireBase();
+                } else {
+                    getActivity().finish();
+                }
+            }
+        }
+    }
     @Override
     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
         User user = extractUser(dataSnapshot);
@@ -128,7 +141,6 @@ public class MyMapFragment extends MapFragment implements OnMapReadyCallback, Ch
         Marker userMarker = mMap.addMarker(markerOptions.position(position).draggable(false));
         userMarker.setTitle(user.getFullName());
         setMarkerVisibility(user.getFullName(), userMarker);
-       // userMarker.setVisible(false);
         users.put(user.getEmail(), userMarker);
         getActivity().startService(new Intent(getActivity(), FetchAddressIntentService.class).putExtra(EXTRA_KEY, user.getEmail()).putExtra(EXTRA_LOCATION, position));
     }
