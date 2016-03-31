@@ -36,11 +36,9 @@ public class LoginActivity extends Activity {
     }
 
     void chooseAccount() {
-        AccountManager am = (AccountManager) getSystemService(ACCOUNT_SERVICE);
-        List<Account> accounts = Arrays.asList(am.getAccounts());
-        Intent i = null;
+        Intent i;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            i = AccountManager.newChooseAccountIntent(null, accounts, new String[]{"com.google"}, null, null, null, null);
+            i = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, null, null, null, null);
         }
         else{
             i = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, true, null,  null, null, null);

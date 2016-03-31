@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/BeamonTracker.iml" filepath="$PROJECT_DIR$/BeamonTracker.iml" />
       <module fileurl="file://$PROJECT_DIR$/Tracker-Android.iml" filepath="$PROJECT_DIR$/Tracker-Android.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
