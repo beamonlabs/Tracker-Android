@@ -92,9 +92,9 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         if (!PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getBoolean("locations_enabled", true)) {
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
             googleApiClient.disconnect();
-            User user = new User(getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE).getString(LoginActivity.PREF_EMAIL, ""));
-            String username = user.getFullName();
-            Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/users/" + username);
+            SharedPreferences sharedPreferences = getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE);
+            String fullName = sharedPreferences.getString(LoginActivity.FULL_NAME, "");
+            Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/users/" + fullName);
             ref.removeValue();
             return;
         }
@@ -127,7 +127,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         String fullName = sharedPreferences.getString(LoginActivity.FULL_NAME, "");
         Firebase.setAndroidContext(this);
         Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/");
-        Firebase posts = ref.child("users/" + new User(email).getFullName());
+        Firebase posts = ref.child("users/" + fullName);
         User user = new User(email,
                 fullName,
                 location.getLongitude(),

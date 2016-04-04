@@ -10,14 +10,14 @@ public class User {
     private double latitude;
 
     public User(String email, String fullName, double longitude, double latitude) {
-        this(email);
-        this.fullName = fullName;
+        this(email, fullName);
         this.longitude = longitude;
         this.latitude = latitude;
     }
 
-    public User(String email) {
+    public User(String email, String fullName) {
         this.email = email;
+        this.fullName = fullName;
     }
 
     public String getFullName() {
