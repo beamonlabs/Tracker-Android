@@ -8,6 +8,7 @@ public class User {
     private String fullName;
     private double longitude;
     private double latitude;
+    private String key;
 
     public User(String email, String fullName, double longitude, double latitude) {
         this(email, fullName);
@@ -20,8 +21,18 @@ public class User {
         this.fullName = fullName;
     }
 
+    public String fallbackKey(){
+        String name = email.split("@")[0]; //.replace('.', ' '); //.replaceAll(" ([a-z])", " $1".toUpperCase());
+        StringBuilder sb = new StringBuilder();
+        for (String part : name.split("\\.")) {
+                    sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(" ");
+        }
+        return sb.toString().trim();
+    }
     public String getFullName() {
-       return fullName;
+        if(fullName == null || fullName.equals(""))
+            return fallbackKey();
+        return fullName;
     }
 
     public void setFullName(String fullName){

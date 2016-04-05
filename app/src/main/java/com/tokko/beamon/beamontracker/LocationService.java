@@ -21,7 +21,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.plus.Plus;
 
 
 public class LocationService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -94,7 +93,8 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
             googleApiClient.disconnect();
             SharedPreferences sharedPreferences = getSharedPreferences(LoginActivity.class.getSimpleName(), MODE_PRIVATE);
             String fullName = sharedPreferences.getString(LoginActivity.FULL_NAME, "");
-            Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/users/" + fullName);
+            String email = sharedPreferences.getString(LoginActivity.PREF_EMAIL, "");
+            Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/users/" + new User(email, fullName).getFullName());
             ref.removeValue();
             return;
         }
@@ -127,11 +127,11 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         String fullName = sharedPreferences.getString(LoginActivity.FULL_NAME, "");
         Firebase.setAndroidContext(this);
         Firebase ref = new Firebase("https://crackling-torch-7934.firebaseio.com/beamontracker/");
-        Firebase posts = ref.child("users/" + fullName);
         User user = new User(email,
                 fullName,
                 location.getLongitude(),
                 location.getLatitude());
+        Firebase posts = ref.child("users/" + user.getFullName());
         posts.setValue(user);
     }
 
